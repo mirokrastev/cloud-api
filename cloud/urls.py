@@ -14,8 +14,23 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-from django.urls import path
+from django.urls import path, re_path
+from drf_yasg import openapi
+from drf_yasg.views import get_schema_view
+
+schema_view = get_schema_view(
+    info=openapi.Info(
+        title='Cloud',
+        description='Cloud API',
+        default_version='v1'
+    ),
+    public=True,
+)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+
+    # OpenAPI URLs
+    re_path(r'^$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
+    re_path(r'^(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
 ]
