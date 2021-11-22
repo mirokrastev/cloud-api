@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from math import inf
 
 PROFILE_TYPES = (
     ('basic', 'Basic'),
@@ -7,6 +8,12 @@ PROFILE_TYPES = (
     ('premium', 'Premium'),
     ('enterprise', 'Enterprise'),
 )
+
+"""
+10 << 10 = 10 GB
+50 << 10 = 50 GB
+100 << 10 = 100 GB
+"""
 
 
 class User(AbstractUser):
@@ -21,6 +28,10 @@ class BasicUserManager(models.Manager):
 
 class BasicUserMore(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    @property
+    def space(self):
+        return 10 << 10
 
 
 class BasicUser(User):
@@ -42,6 +53,10 @@ class StandardUserManager(models.Manager):
 class StandardUserMore(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
+    @property
+    def space(self):
+        return 50 << 10
+
 
 class StandardUser(User):
     objects = StandardUserManager()
@@ -62,6 +77,10 @@ class PremiumUserManager(models.Manager):
 class PremiumUserMore(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
+    @property
+    def space(self):
+        return 100 << 10
+
 
 class PremiumUser(User):
     objects = PremiumUserManager()
@@ -81,6 +100,10 @@ class EnterpriseUserManager(models.Manager):
 
 class EnterpriseUserMore(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
+
+    @property
+    def space(self):
+        return inf
 
 
 class EnterpriseUser(User):
