@@ -19,7 +19,6 @@ class RegisterViewSet(mixins.CreateModelMixin, GenericViewSet):
     permission_classes = ()
 
 
-# todo add more fields to serializer
 class UserDetail(APIView):
     serializer_class = serializers.UserSerializer
     permission_classes = [IsAuthenticated]
