@@ -4,8 +4,9 @@ from accounts.models import User
 
 
 def get_upload_path(instance, filename):
-    file, file_ext = filename.split('.')
-    return f'{instance.user.username}/{file}-{uuid.uuid4().hex[:10]}.{file_ext}'
+    file = filename.split('.')
+    file_ext = file.pop()
+    return f'{instance.user.username}/{".".join(file)}-{uuid.uuid4().hex[:10]}.{file_ext}'
 
 
 class FileUpload(models.Model):
