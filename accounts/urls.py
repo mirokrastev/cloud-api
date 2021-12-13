@@ -11,5 +11,4 @@ urlpatterns = [
     path('api/login', views.LoginView.as_view(), name='login'),
     path('api/user', views.UserDetail.as_view(), name='user'),
     re_path('^api/', include(router.urls)),
-    path('', include('uploads.urls'))
 ]
