@@ -1,5 +1,5 @@
 from rest_framework import permissions, viewsets
-from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, CreateModelMixin
+from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, CreateModelMixin, DestroyModelMixin
 from rest_framework import parsers
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -22,7 +22,7 @@ class StatsView(APIView):
         })
 
 
-class FileUploadViewSet(CreateModelMixin, ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
+class FileUploadViewSet(DestroyModelMixin, CreateModelMixin, ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
     serializer_class = FileUploadSerializer
     queryset = FileUpload.objects.all()
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
