@@ -1,5 +1,5 @@
 from rest_framework import permissions, viewsets
-from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, CreateModelMixin
+from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, CreateModelMixin, DestroyModelMixin
 from rest_framework import parsers
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -11,7 +11,7 @@ class StatsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        user_uploads = FileUpload.objects.filter(user=request.user)
+        user_uploads = request.user.uploads.all()
         user_uploads_size = sum(i.file.size for i in user_uploads) / float(1 << 20)
         remaining_space = request.user.account.space - user_uploads_size
 
@@ -22,14 +22,13 @@ class StatsView(APIView):
         })
 
 
-class FileUploadViewSet(CreateModelMixin, ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
+class FileUploadViewSet(DestroyModelMixin, CreateModelMixin, ListModelMixin, RetrieveModelMixin, viewsets.GenericViewSet):
     serializer_class = FileUploadSerializer
     queryset = FileUpload.objects.all()
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
 
     def perform_create(self, serializer):
-        serializer.validated_data['user'] = self.request.user
-        return super().perform_create(serializer)
+        serializer.save(user=self.request.user)
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)
