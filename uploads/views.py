@@ -11,7 +11,7 @@ class StatsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        user_uploads = FileUpload.objects.filter(user=request.user)
+        user_uploads = request.user.uploads.all()
         user_uploads_size = sum(i.file.size for i in user_uploads) / float(1 << 20)
         remaining_space = request.user.account.space - user_uploads_size
 
@@ -28,8 +28,7 @@ class FileUploadViewSet(DestroyModelMixin, CreateModelMixin, ListModelMixin, Ret
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
 
     def perform_create(self, serializer):
-        serializer.validated_data['user'] = self.request.user
-        return super().perform_create(serializer)
+        serializer.save(user=self.request.user)
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)
