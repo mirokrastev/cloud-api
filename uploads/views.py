@@ -1,8 +1,12 @@
+from django.http import FileResponse
+
 from rest_framework import permissions, viewsets
+from rest_framework.generics import GenericAPIView
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, CreateModelMixin, DestroyModelMixin
 from rest_framework import parsers
 from rest_framework.response import Response
 from rest_framework.views import APIView
+
 from uploads.models import FileUpload
 from uploads.serializers import FileUploadSerializer
 
@@ -29,6 +33,18 @@ class FileUploadViewSet(DestroyModelMixin, CreateModelMixin, ListModelMixin, Ret
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    def get_queryset(self):
+        return self.queryset.filter(user=self.request.user)
+
+
+class FileDownloadView(GenericAPIView):
+    queryset = FileUpload.objects.all()
+    serializer_class = None
+
+    def get(self, request, *args, **kwargs):
+        file = self.get_object()
+        return FileResponse(open(file.file.path, mode='rb'))
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)
