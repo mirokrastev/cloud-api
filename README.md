@@ -9,4 +9,4 @@ Configure ```.env``` from ```env_example``` template
 Cloud storage, built with DRF. It consists of 4 different types of users, monthly subscriptions, etc.
 
 ## API Docs
-Check ```/swagger``` for Schema.
+Check ```/``` for Schema.
