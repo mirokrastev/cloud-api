@@ -24,6 +24,17 @@ class User(AbstractUser):
     def account(self):
         return getattr(self, '%susermore' % self.type)
 
+    @property
+    def remaining_space(self):
+        """
+        returns in bytes
+        """
+
+        user_uploads = self.uploads.all()
+        user_uploads_size = sum(i.file.size for i in user_uploads)
+        remaining_space = self.account.space * 1048576 - user_uploads_size
+        return remaining_space
+
 
 class BasicUserManager(UserManager):
     def get_queryset(self, *args, **kwargs):

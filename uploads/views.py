@@ -1,3 +1,5 @@
+import sys
+
 from django.http import FileResponse
 
 from rest_framework import permissions, viewsets
@@ -32,7 +34,11 @@ class FileUploadViewSet(DestroyModelMixin, CreateModelMixin, ListModelMixin, Ret
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        # todo: return error
+
+        remaining_space = self.request.user.remaining_space - sys.getsizeof(serializer.validated_data['file'].file)
+        if remaining_space >= 0:
+            serializer.save(user=self.request.user)
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)
