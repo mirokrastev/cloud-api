@@ -1,4 +1,5 @@
 import sys
+from math import inf
 
 from django.http import FileResponse
 
@@ -17,14 +18,16 @@ class StatsView(APIView):
     permission_classes = [permissions.IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        user_uploads = request.user.uploads.all()
-        user_uploads_size = sum(i.file.size for i in user_uploads) / float(1 << 20)
-        remaining_space = request.user.account.space - user_uploads_size
+        user_uploads = self.request.user.uploads.all()
+
+        used_space = round(sum(i.file.size for i in user_uploads), 2)
+        remaining_space = round(self.request.user.account.space - used_space, 2)
+        remaining_space = 'inf' if remaining_space == inf else remaining_space
 
         return Response({
             'uploads_count': user_uploads.count(),
-            'used_space': round(user_uploads_size, 2),
-            'remaining_space': round(remaining_space, 2),
+            'used_space': used_space,
+            'remaining_space': remaining_space,
         })
 
 
