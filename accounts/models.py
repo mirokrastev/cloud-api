@@ -26,10 +26,6 @@ class User(AbstractUser):
 
     @property
     def remaining_space(self):
-        """
-        returns in bytes
-        """
-
         user_uploads = self.uploads.all()
         user_uploads_size = sum(i.file.size for i in user_uploads)
         remaining_space = self.account.space - user_uploads_size

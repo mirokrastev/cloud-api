@@ -12,3 +12,6 @@ def get_upload_path(instance, filename):
 class FileUpload(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='uploads')
     file = models.FileField(upload_to=get_upload_path)
+
+    def __str__(self):
+        return str(self.file)
