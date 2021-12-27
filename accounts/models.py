@@ -10,9 +10,9 @@ PROFILE_TYPES = (
 )
 
 """
-10 << 10 = 10 GB
-50 << 10 = 50 GB
-100 << 10 = 100 GB
+10 * 1024 ** 3 = 10 GB in bytes
+50 * 1024 ** 3 = 50 GB in bytes
+100 * 1024 ** 3 = 100 GB in bytes
 """
 
 
@@ -23,6 +23,13 @@ class User(AbstractUser):
     @property
     def account(self):
         return getattr(self, '%susermore' % self.type)
+
+    @property
+    def remaining_space(self):
+        user_uploads = self.uploads.all()
+        user_uploads_size = sum(i.file.size for i in user_uploads)
+        remaining_space = self.account.space - user_uploads_size
+        return remaining_space
 
 
 class BasicUserManager(UserManager):
@@ -35,7 +42,7 @@ class BasicUserMore(models.Model):
 
     @property
     def space(self):
-        return 10 << 10
+        return 10 * 1024 ** 3
 
 
 class BasicUser(User):
@@ -59,7 +66,7 @@ class StandardUserMore(models.Model):
 
     @property
     def space(self):
-        return 50 << 10
+        return 50 * 1024 ** 3
 
     def __str__(self):
         return str(self.user)
@@ -86,7 +93,7 @@ class PremiumUserMore(models.Model):
 
     @property
     def space(self):
-        return 100 << 10
+        return 100 * 1024 ** 3
 
     def __str__(self):
         return str(self.user)

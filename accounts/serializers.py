@@ -18,9 +18,7 @@ class UserSerializer(serializers.ModelSerializer):
     def get_space(self, obj):
         if obj.account.space == inf:
             return 'inf'
-
-        space_in_gb = obj.account.space / 1000
-        return space_in_gb
+        return obj.account.space
 
     def create(self, validated_data):
         user = User.objects.create_user(**validated_data)
