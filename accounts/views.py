@@ -1,6 +1,9 @@
+from math import inf
+
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import GenericViewSet, ViewSet
 from rest_framework.viewsets import mixins
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.permissions import IsAuthenticated
@@ -20,13 +23,26 @@ class RegisterViewSet(mixins.CreateModelMixin, GenericViewSet):
     permission_classes = ()
 
 
-class UserDetail(APIView):
+class UserViewSet(ViewSet):
     serializer_class = serializers.UserSerializer
-    permission_classes = [IsAuthenticated]
 
-    def get(self, request, *args, **kwargs):
+    def list(self, request, *args, **kwargs):
         serializer = self.serializer_class(request.user)
         return Response(serializer.data)
+
+    @action(methods=['GET'], detail=False)
+    def stats(self, request, *args, **kwargs):
+        user_uploads = self.request.user.uploads.all()
+
+        used_space = round(sum(i.file.size for i in user_uploads), 2)
+        remaining_space = round(self.request.user.account.space - used_space, 2)
+        remaining_space = 'inf' if remaining_space == inf else remaining_space
+
+        return Response({
+            'uploads_count': user_uploads.count(),
+            'used_space': used_space,
+            'remaining_space': remaining_space,
+        })
 
 
 class LogoutView(APIView):
