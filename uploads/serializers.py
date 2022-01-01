@@ -7,8 +7,7 @@ class FileUploadSerializer(serializers.ModelSerializer):
     file = serializers.FileField(max_length=100, write_only=True, required=True, allow_null=False)
 
     def get_filename(self, obj):
-        # todo refactor to username-hash/...
-        _, filename = obj.file.file.name.split(obj.user.username, maxsplit=1)
+        _, filename = obj.file.file.name.split(f'{obj.user.username}-{obj.user.uuid}', maxsplit=1)
         return filename[1:]
 
     class Meta:

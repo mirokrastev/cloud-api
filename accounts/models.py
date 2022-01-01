@@ -23,7 +23,7 @@ PROFILE_TYPES = (
 class User(AbstractUser):
     type = models.CharField(max_length=30, choices=PROFILE_TYPES, default='basic')
     email = models.EmailField(unique=True)
-    uuid = models.CharField(unique=True, max_length=32)
+    uuid = models.CharField(unique=True, max_length=32, blank=True)
 
     def __init__(self, *args, **kwargs):
         """

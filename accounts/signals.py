@@ -1,9 +1,13 @@
+import os
 from django.apps import apps
+
+from cloud import settings
 
 
 def delete_user_folder(instance, **kwargs):
-    # todo implement
-    pass
+    p = f'{settings.MEDIA_ROOT}/{instance.username}-{instance.uuid}'
+    if os.path.exists(p):
+        os.rmdir(p)
 
 
 def create_user_account(instance, created: bool, **kwargs):
