@@ -18,7 +18,7 @@ class LoginView(ObtainAuthToken):
 
 
 class RegisterViewSet(mixins.CreateModelMixin, GenericViewSet):
-    queryset = models.BasicUser.objects.all()
+    queryset = models.User.objects.all()
     serializer_class = serializers.UserSerializer
     permission_classes = ()
 
