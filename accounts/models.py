@@ -1,10 +1,10 @@
-import uuid
 from math import inf
 
 from django.db import models
 from django.contrib.auth.models import AbstractUser, UserManager
 
 from accounts import signals
+from base.models import BaseModel
 
 PROFILE_TYPES = (
     ('basic', 'Basic'),
@@ -20,10 +20,9 @@ PROFILE_TYPES = (
 """
 
 
-class User(AbstractUser):
+class User(BaseModel, AbstractUser):
     type = models.CharField(max_length=30, choices=PROFILE_TYPES, default='basic')
     email = models.EmailField(unique=True)
-    uuid = models.CharField(unique=True, max_length=32, blank=True)
 
     def __init__(self, *args, **kwargs):
         """
@@ -32,17 +31,6 @@ class User(AbstractUser):
         super().__init__(*args, **kwargs)
         models.signals.pre_delete.connect(signals.delete_user_folder, sender=self.__class__)
         models.signals.post_save.connect(signals.create_user_account, sender=self.__class__)
-
-    def save(self, *args, **kwargs):
-        if self.pk:
-            return super().save(*args, **kwargs)
-
-        temp_uuid = uuid.uuid4().hex[:10]
-
-        if User.objects.filter(uuid=temp_uuid).count() > 0:
-            return self.save(*args, **kwargs)
-        self.uuid = temp_uuid
-        return super().save(*args, **kwargs)
 
     @property
     def account(self):
@@ -61,7 +49,7 @@ class BasicUserManager(UserManager):
         return super().get_queryset(*args, **kwargs).filter(type='basic')
 
 
-class BasicUserMore(models.Model):
+class BasicUserMore(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     @property
@@ -93,7 +81,7 @@ class StandardUserManager(UserManager):
         return super().get_queryset(*args, **kwargs).filter(type='standard')
 
 
-class StandardUserMore(models.Model):
+class StandardUserMore(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     @property
@@ -125,7 +113,7 @@ class PremiumUserManager(UserManager):
         return super().get_queryset(*args, **kwargs).filter(type='premium')
 
 
-class PremiumUserMore(models.Model):
+class PremiumUserMore(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     @property
@@ -157,7 +145,7 @@ class EnterpriseUserManager(UserManager):
         return super().get_queryset(*args, **kwargs).filter(type='enterprise')
 
 
-class EnterpriseUserMore(models.Model):
+class EnterpriseUserMore(BaseModel):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 
     @property
