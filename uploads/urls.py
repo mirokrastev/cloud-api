@@ -8,6 +8,5 @@ router = routers.DefaultRouter()
 router.register('files', views.FileUploadViewSet)
 
 urlpatterns = [
-    path('api/files/<int:pk>/download', views.FileDownloadView.as_view(), name='download'),
     re_path('^api/', include(router.urls)),
 ]
