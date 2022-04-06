@@ -1,5 +1,6 @@
 from math import inf
 
+from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -21,6 +22,17 @@ class RegisterViewSet(mixins.CreateModelMixin, GenericViewSet):
     queryset = models.User.objects.all()
     serializer_class = serializers.UserSerializer
     permission_classes = ()
+
+    def perform_create(self, serializer):
+        return serializer.save()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = self.perform_create(serializer)
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({'user_id': user.id, 'token': token.key}, status=status.HTTP_201_CREATED)
 
 
 class UserViewSet(ViewSet):
