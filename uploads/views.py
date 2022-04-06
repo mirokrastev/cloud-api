@@ -18,7 +18,7 @@ class FileUploadViewSet(ListModelMixin,
     queryset = FileUpload.objects.all()
     parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
 
-    @action(detail=True, url_name='download')
+    @action(methods=['GET'], detail=True, url_name='download')
     def download(self, request, *args, **kwargs):
         file = self.get_object()
         return FileResponse(open(file.file.path, mode='rb'), as_attachment=True)
