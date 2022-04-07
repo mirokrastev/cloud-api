@@ -44,14 +44,14 @@ class UserViewSet(ViewSet):
 
     @action(methods=['GET'], detail=False)
     def stats(self, request, *args, **kwargs):
-        user_uploads = self.request.user.uploads.all()
+        user = self.request.user
 
-        used_space = round(sum(i.file.size for i in user_uploads), 2)
-        remaining_space = round(self.request.user.account.space - used_space, 2)
+        used_space = round(user.used_space, 2)
+        remaining_space = round(user.remaining_space, 2)
         remaining_space = 'inf' if remaining_space == inf else remaining_space
 
         return Response({
-            'uploads_count': user_uploads.count(),
+            'files_count': user.files.count(),
             'used_space': used_space,
             'remaining_space': remaining_space,
         })

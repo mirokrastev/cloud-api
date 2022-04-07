@@ -1,28 +1,30 @@
 from math import inf
 
 from django.db import models
+from django.apps import apps
 from django.contrib.auth.models import AbstractUser, UserManager
+from django.db.models import Sum
+from django.db.models.functions import Coalesce
+from django.utils.functional import cached_property
 
 from accounts import signals
 from base.models import BaseModel
 
-PROFILE_TYPES = (
-    ('basic', 'Basic'),
-    ('standard', 'Standard'),
-    ('premium', 'Premium'),
-    ('enterprise', 'Enterprise'),
-)
-
-"""
-10 * 1024 ** 3 = 10 GB in bytes
-50 * 1024 ** 3 = 50 GB in bytes
-100 * 1024 ** 3 = 100 GB in bytes
-"""
-
 
 class User(BaseModel, AbstractUser):
-    type = models.CharField(max_length=30, choices=PROFILE_TYPES, default='basic')
+    class Types(models.TextChoices):
+        BASIC = ('basic', 'Basic')
+        STANDARD = ('standard', 'Standard')
+        PREMIUM = ('premium', 'Premium')
+        ENTERPRISE = ('enterprise', 'Enterprise')
+
+    type = models.CharField(max_length=30, choices=Types.choices, default=Types.BASIC)
     email = models.EmailField(unique=True)
+
+    REQUIRED_FIELDS = ['email', 'first_name', 'last_name', 'type']
+
+    class Meta:
+        ordering = ['-created_at']
 
     def __init__(self, *args, **kwargs):
         """
@@ -30,17 +32,19 @@ class User(BaseModel, AbstractUser):
         """
         super().__init__(*args, **kwargs)
         models.signals.pre_delete.connect(signals.delete_user_folder, sender=self.__class__)
-        models.signals.post_save.connect(signals.create_user_account, sender=self.__class__)
 
-    @property
+    @cached_property
     def account(self):
-        return getattr(self, '%susermore' % self.type)
+        proxy_model = apps.get_model('accounts', '%sUser' % self.type.capitalize())
+        return proxy_model.objects.get(id=self.id)
 
-    @property
+    @cached_property
+    def used_space(self):
+        return self.files.all().aggregate(size=Coalesce(Sum('file_size'), 0))['size']
+
+    @cached_property
     def remaining_space(self):
-        user_uploads = self.uploads.all()
-        user_uploads_size = sum(i.file.size for i in user_uploads)
-        remaining_space = self.account.space - user_uploads_size
+        remaining_space = self.account.space - self.used_space
         return remaining_space
 
 
@@ -49,28 +53,17 @@ class BasicUserManager(UserManager):
         return super().get_queryset(*args, **kwargs).filter(type='basic')
 
 
-class BasicUserMore(BaseModel):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-
-    @property
-    def space(self):
-        return 10 * 1024 ** 3
-
-    def __str__(self):
-        return str(self.user)
-
-
 class BasicUser(User):
     objects = BasicUserManager()
 
     def save(self, *args, **kwargs):
         if not self.pk:
-            self.type = 'basic'
+            self.type = User.Types.BASIC
         return super().save(*args, **kwargs)
 
     @property
-    def account(self):
-        return self.basicusermore
+    def space(self):
+        return 10 * 1024 ** 3  # 10 GB in bytes
 
     class Meta:
         proxy = True
@@ -81,28 +74,17 @@ class StandardUserManager(UserManager):
         return super().get_queryset(*args, **kwargs).filter(type='standard')
 
 
-class StandardUserMore(BaseModel):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-
-    @property
-    def space(self):
-        return 50 * 1024 ** 3
-
-    def __str__(self):
-        return str(self.user)
-
-
 class StandardUser(User):
     objects = StandardUserManager()
 
     def save(self, *args, **kwargs):
         if not self.pk:
-            self.type = 'standard'
+            self.type = User.Types.STANDARD
         return super().save(*args, **kwargs)
 
     @property
-    def account(self):
-        return self.standardusermore
+    def space(self):
+        return 50 * 1024 ** 3  # 50 GB in bytes
 
     class Meta:
         proxy = True
@@ -113,28 +95,17 @@ class PremiumUserManager(UserManager):
         return super().get_queryset(*args, **kwargs).filter(type='premium')
 
 
-class PremiumUserMore(BaseModel):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-
-    @property
-    def space(self):
-        return 100 * 1024 ** 3
-
-    def __str__(self):
-        return str(self.user)
-
-
 class PremiumUser(User):
     objects = PremiumUserManager()
 
     def save(self, *args, **kwargs):
         if not self.pk:
-            self.type = 'premium'
+            self.type = User.Types.PREMIUM
         return super().save(*args, **kwargs)
 
     @property
-    def account(self):
-        return self.premiumusermore
+    def space(self):
+        return 100 * 1024 ** 3  # 100 GB in bytes
 
     class Meta:
         proxy = True
@@ -145,28 +116,17 @@ class EnterpriseUserManager(UserManager):
         return super().get_queryset(*args, **kwargs).filter(type='enterprise')
 
 
-class EnterpriseUserMore(BaseModel):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
-
-    @property
-    def space(self):
-        return inf
-
-    def __str__(self):
-        return str(self.user)
-
-
 class EnterpriseUser(User):
     objects = EnterpriseUserManager()
 
     def save(self, *args, **kwargs):
         if not self.pk:
-            self.type = 'enterprise'
+            self.type = User.Types.ENTERPRISE
         return super().save(*args, **kwargs)
 
     @property
-    def account(self):
-        return self.enterpriseusermore
+    def space(self):
+        return inf
 
     class Meta:
         proxy = True

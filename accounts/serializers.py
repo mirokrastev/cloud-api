@@ -3,12 +3,12 @@ from math import inf
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 
-from accounts.models import User, PROFILE_TYPES
+from accounts.models import User
 
 
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, trim_whitespace=False, style={'input_type': 'password'})
-    type = serializers.ChoiceField(choices=PROFILE_TYPES, read_only=True)
+    type = serializers.ChoiceField(choices=User.Types.choices, read_only=True)
     space = serializers.SerializerMethodField()
 
     def validate_password(self, value):
