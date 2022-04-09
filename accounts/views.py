@@ -1,5 +1,6 @@
 from math import inf
 
+from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -22,6 +23,17 @@ class RegisterViewSet(mixins.CreateModelMixin, GenericViewSet):
     serializer_class = serializers.UserSerializer
     permission_classes = ()
 
+    def perform_create(self, serializer):
+        return serializer.save()
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = self.perform_create(serializer)
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({'user_id': user.id, 'token': token.key}, status=status.HTTP_201_CREATED)
+
 
 class UserViewSet(ViewSet):
     serializer_class = serializers.UserSerializer
@@ -32,14 +44,14 @@ class UserViewSet(ViewSet):
 
     @action(methods=['GET'], detail=False)
     def stats(self, request, *args, **kwargs):
-        user_uploads = self.request.user.uploads.all()
+        user = self.request.user
 
-        used_space = round(sum(i.file.size for i in user_uploads), 2)
-        remaining_space = round(self.request.user.account.space - used_space, 2)
+        used_space = round(user.used_space, 2)
+        remaining_space = round(user.remaining_space, 2)
         remaining_space = 'inf' if remaining_space == inf else remaining_space
 
         return Response({
-            'uploads_count': user_uploads.count(),
+            'files_count': user.files.count(),
             'used_space': used_space,
             'remaining_space': remaining_space,
         })
