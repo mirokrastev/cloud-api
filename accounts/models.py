@@ -63,7 +63,7 @@ class BasicUser(User):
 
     @property
     def space(self):
-        return 10 * 1024 ** 3  # 10 GB in bytes
+        return 1 * 1024 ** 3  # 1 GB in bytes
 
     class Meta:
         proxy = True
@@ -84,7 +84,7 @@ class StandardUser(User):
 
     @property
     def space(self):
-        return 50 * 1024 ** 3  # 50 GB in bytes
+        return 5 * 1024 ** 3  # 5 GB in bytes
 
     class Meta:
         proxy = True
@@ -105,7 +105,7 @@ class PremiumUser(User):
 
     @property
     def space(self):
-        return 100 * 1024 ** 3  # 100 GB in bytes
+        return 10 * 1024 ** 3  # 10 GB in bytes
 
     class Meta:
         proxy = True
