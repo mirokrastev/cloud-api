@@ -50,7 +50,7 @@ class User(BaseModel, AbstractUser):
 
 class BasicUserManager(UserManager):
     def get_queryset(self, *args, **kwargs):
-        return super().get_queryset(*args, **kwargs).filter(type='basic')
+        return super().get_queryset(*args, **kwargs).filter(type=User.Types.BASIC)
 
 
 class BasicUser(User):
@@ -71,7 +71,7 @@ class BasicUser(User):
 
 class StandardUserManager(UserManager):
     def get_queryset(self, *args, **kwargs):
-        return super().get_queryset(*args, **kwargs).filter(type='standard')
+        return super().get_queryset(*args, **kwargs).filter(type=User.Types.STANDARD)
 
 
 class StandardUser(User):
@@ -92,7 +92,7 @@ class StandardUser(User):
 
 class PremiumUserManager(UserManager):
     def get_queryset(self, *args, **kwargs):
-        return super().get_queryset(*args, **kwargs).filter(type='premium')
+        return super().get_queryset(*args, **kwargs).filter(type=User.Types.PREMIUM)
 
 
 class PremiumUser(User):
@@ -113,7 +113,7 @@ class PremiumUser(User):
 
 class EnterpriseUserManager(UserManager):
     def get_queryset(self, *args, **kwargs):
-        return super().get_queryset(*args, **kwargs).filter(type='enterprise')
+        return super().get_queryset(*args, **kwargs).filter(type=User.Types.ENTERPRISE)
 
 
 class EnterpriseUser(User):
