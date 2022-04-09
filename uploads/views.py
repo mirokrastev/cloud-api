@@ -17,7 +17,7 @@ class FileUploadViewSet(ListModelMixin,
                         viewsets.GenericViewSet):
     serializer_class = FileUploadSerializer
     queryset = FileUpload.objects.all()
-    parser_classes = [parsers.JSONParser, parsers.MultiPartParser]
+    parser_classes = [parsers.MultiPartParser]
 
     def get_queryset(self):
         return self.queryset.filter(user=self.request.user)
