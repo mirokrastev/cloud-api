@@ -50,7 +50,7 @@ class User(BaseModel, AbstractUser):
 
 class BasicUserManager(UserManager):
     def get_queryset(self, *args, **kwargs):
-        return super().get_queryset(*args, **kwargs).filter(type='basic')
+        return super().get_queryset(*args, **kwargs).filter(type=User.Types.BASIC)
 
 
 class BasicUser(User):
@@ -63,7 +63,7 @@ class BasicUser(User):
 
     @property
     def space(self):
-        return 10 * 1024 ** 3  # 10 GB in bytes
+        return 1 * 1024 ** 3  # 1 GB in bytes
 
     class Meta:
         proxy = True
@@ -71,7 +71,7 @@ class BasicUser(User):
 
 class StandardUserManager(UserManager):
     def get_queryset(self, *args, **kwargs):
-        return super().get_queryset(*args, **kwargs).filter(type='standard')
+        return super().get_queryset(*args, **kwargs).filter(type=User.Types.STANDARD)
 
 
 class StandardUser(User):
@@ -84,7 +84,7 @@ class StandardUser(User):
 
     @property
     def space(self):
-        return 50 * 1024 ** 3  # 50 GB in bytes
+        return 5 * 1024 ** 3  # 5 GB in bytes
 
     class Meta:
         proxy = True
@@ -92,7 +92,7 @@ class StandardUser(User):
 
 class PremiumUserManager(UserManager):
     def get_queryset(self, *args, **kwargs):
-        return super().get_queryset(*args, **kwargs).filter(type='premium')
+        return super().get_queryset(*args, **kwargs).filter(type=User.Types.PREMIUM)
 
 
 class PremiumUser(User):
@@ -105,7 +105,7 @@ class PremiumUser(User):
 
     @property
     def space(self):
-        return 100 * 1024 ** 3  # 100 GB in bytes
+        return 10 * 1024 ** 3  # 10 GB in bytes
 
     class Meta:
         proxy = True
@@ -113,7 +113,7 @@ class PremiumUser(User):
 
 class EnterpriseUserManager(UserManager):
     def get_queryset(self, *args, **kwargs):
-        return super().get_queryset(*args, **kwargs).filter(type='enterprise')
+        return super().get_queryset(*args, **kwargs).filter(type=User.Types.ENTERPRISE)
 
 
 class EnterpriseUser(User):
