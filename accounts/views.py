@@ -58,8 +58,6 @@ class UserViewSet(ViewSet):
 
 
 class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
-
     def post(self, request, *args, **kwargs):
         self.request.user.auth_token.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

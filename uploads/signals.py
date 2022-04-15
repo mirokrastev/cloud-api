@@ -6,5 +6,6 @@ from uploads.models import FileUpload
 
 @receiver(pre_delete, sender=FileUpload)
 def delete_upload_file(instance, **kwargs):
-    if os.path.exists(instance.file.path):
-        os.remove(instance.file.path)
+    file = instance.file.path
+    if os.path.exists(file):
+        os.remove(file)
