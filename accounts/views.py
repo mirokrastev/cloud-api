@@ -7,7 +7,6 @@ from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet, ViewSet
 from rest_framework.viewsets import mixins
 from rest_framework.authtoken.views import ObtainAuthToken
-from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from accounts import models
@@ -58,8 +57,6 @@ class UserViewSet(ViewSet):
 
 
 class LogoutView(APIView):
-    permission_classes = [IsAuthenticated]
-
     def post(self, request, *args, **kwargs):
         self.request.user.auth_token.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)

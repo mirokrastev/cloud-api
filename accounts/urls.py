@@ -5,7 +5,7 @@ from accounts import views
 app_name = 'accounts'
 
 auth_router = routers.DefaultRouter()
-auth_router.register('register', views.RegisterViewSet)
+auth_router.register('register', views.RegisterViewSet, basename='register')
 
 router = routers.DefaultRouter()
 router.register('user', views.UserViewSet, basename='user')
