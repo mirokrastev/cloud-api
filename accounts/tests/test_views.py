@@ -3,6 +3,7 @@ from rest_framework.test import APITestCase, APIClient
 from rest_framework.authtoken.models import Token
 
 from accounts import models
+from accounts.tests.factories import create_user
 
 
 class RegisterApiTestCase(APITestCase):
@@ -99,3 +100,113 @@ class RegisterApiTestCase(APITestCase):
                   'This password is too common.')
         assert len(response.data['password']) == 2
         assert all([error in errors for error in response.data['password']])
+
+
+class LoginApiTestCase(APITestCase):
+    def setUp(self):
+        self.user = create_user()
+        self.client = APIClient()
+        self.url = reverse('accounts:login')
+
+    def test_login_incorrect_credentials(self):
+        data = {
+            'username': 'testuser',
+            'password': 'shouldFail123zxc'
+        }
+
+        response = self.client.post(self.url, data)
+        assert response.status_code == 400
+
+        assert response.data['non_field_errors'][0] == 'Unable to log in with provided credentials.'
+
+        data = {
+            'username': 'karkinos',
+            'password': 'secretPassword123'
+        }
+
+        response = self.client.post(self.url, data)
+        assert response.status_code == 400
+
+        assert response.data['non_field_errors'][0] == 'Unable to log in with provided credentials.'
+
+    def test_login_correct_credentials(self):
+        data = {
+            'username': 'testuser',
+            'password': 'secretPassword123'
+        }
+
+        response = self.client.post(self.url, data)
+        assert response.status_code == 200
+
+        assert len(response.data) == 1
+        assert response.data['token']
+
+
+class LogoutAPiTestCase(APITestCase):
+    def setUp(self):
+        self.user = create_user()
+        self.client = APIClient()
+        self.url = reverse('accounts:logout')
+
+    def test_logout_unauthorized(self):
+        response = self.client.post(self.url)
+        assert response.status_code == 401
+        assert response.data['detail'] == 'Authentication credentials were not provided.'
+
+    def test_logout_authorized(self):
+        self.client.force_authenticate(self.user)
+
+        response = self.client.post(self.url)
+        assert response.status_code == 204
+
+
+class UserApiTestcase(APITestCase):
+    def setUp(self):
+        self.user = create_user(models.StandardUser,
+                                first_name='FName', last_name='LName',
+                                type=models.User.Types.STANDARD)
+        self.client = APIClient()
+
+        self.client.force_authenticate(self.user)
+
+    def test_unauthorized_request(self):
+        self.client.logout()
+        url = reverse('accounts:user-list')
+
+        response = self.client.get(url)
+        assert response.status_code == 401
+        assert response.data['detail'] == 'Authentication credentials were not provided.'
+
+    def test_user_list(self):
+        url = reverse('accounts:user-list')
+
+        response = self.client.get(url)
+        assert response.status_code == 200
+
+        data = response.data
+        keys = ('id', 'username', 'first_name', 'last_name', 'email', 'type', 'space')
+
+        assert len(data) == len(keys)
+        assert (set(data.keys()) - set(keys)) == set()
+
+        assert (data['username'], data['first_name'],
+                data['last_name'], data['email'],
+                data['type'], data['space']) == ('testuser', 'FName',
+                                                 'LName', 'testemail@example.com',
+                                                 'standard', 5 * 1024 ** 3)
+
+    def test_user_stats(self):
+        url = reverse('accounts:user-stats')
+
+        response = self.client.get(url)
+        assert response.status_code == 200
+
+        data = response.data
+        keys = ('files_count', 'used_space', 'remaining_space')
+
+        assert len(data) == len(keys)
+        assert (set(data.keys()) - set(keys)) == set()
+
+        assert (data['files_count'],
+                data['used_space'],
+                data['remaining_space']) == (0, 0, 5 * 1024 ** 3)
